@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 require "oystercard"
 RSpec.describe Oystercard do
-  let(:station) { double(:station) }
+  let(:entry_station) { double(:entry_station) }
+  let(:exit_station) { double(:exit_station) }
+
   describe "#balance" do 
     it { is_expected.to respond_to(:balance) }
 
@@ -29,26 +31,26 @@ RSpec.describe Oystercard do
     
     it "can touch in" do
       subject.top_up(Oystercard::MINIMUM_AMOUNT)
-      subject.touch_in(station)
+      subject.touch_in(entry_station)
       expect(subject.in_journey?).to eq true
     end
 
     it "can touch out" do
       subject.top_up(Oystercard::MINIMUM_AMOUNT)
-      subject.touch_in(station)
-      subject.touch_out 
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
       expect(subject.in_journey).to eq false
     end
 
     it "recorded the station you have touched in at" do
       subject.top_up(Oystercard::MINIMUM_AMOUNT)
-      expect(subject.touch_in(station)).to eq (station)
+      expect(subject.touch_in(entry_station)).to eq entry_station
     end
 
     it "set entry station to nilon touch out" do
       subject.top_up(Oystercard::MINIMUM_AMOUNT)
-      subject.touch_in(station)
-      expect(subject.touch_out).to eq nil
+      subject.touch_in(entry_station)
+      expect(subject.touch_out(exit_station)).to eq nil
     end
 
     it 'raises an error if we touch in with funds less than minimum amount' do
@@ -56,30 +58,42 @@ RSpec.describe Oystercard do
       # subject.balance
       minimum_amount = Oystercard::MINIMUM_AMOUNT
       
-      expect { subject.touch_in(station) }.to raise_error "Need minimum amount of £#{minimum_amount} to touch in"
+      expect { subject.touch_in(entry_station) }.to raise_error "Need minimum amount of £#{minimum_amount} to touch in"
     end 
 
     it "on touch out it will deduct from balance " do
       subject.top_up(Oystercard::MINIMUM_AMOUNT)
-      subject.touch_in(station)
-      expect { subject.touch_out }.to change{ subject.balance }.by(-Oystercard::MINIMUM_AMOUNT)
+      subject.touch_in(entry_station)
+      expect { subject.touch_out(exit_station) }.to change{ subject.balance }.by(-Oystercard::MINIMUM_AMOUNT)
     end
 
+    it "records one journey" do
+      subject.top_up(Oystercard::MINIMUM_AMOUNT)
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.stations).to eq ([{ :entry_station => entry_station, :exit_station => exit_station }])
+    end
   end
   
   describe "#in_journey?" do
     it "true if you touch in" do
-    subject.top_up(Oystercard::MINIMUM_AMOUNT)
-    subject.touch_in(station)
-    expect(subject.in_journey?).to eq true
+      subject.top_up(Oystercard::MINIMUM_AMOUNT)
+      subject.touch_in(entry_station)
+      expect(subject.in_journey?).to eq true
     end
 
     it "false if you touch on" do
       subject.top_up(Oystercard::MINIMUM_AMOUNT)
-      subject.touch_in(station)
-      subject.touch_out
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
       expect(subject.in_journey?).to eq false
-      end
+    end
+  end
+
+  describe "stations" do
+    it "will be empty by default" do
+      expect(subject.stations).to eq []
+    end
   end
 
 end
