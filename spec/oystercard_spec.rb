@@ -3,6 +3,7 @@ require "oystercard"
 RSpec.describe Oystercard do
   let(:entry_station) { double(:entry_station) }
   let(:exit_station) { double(:exit_station) }
+  let(:journey) { double('journey') }
 
   describe "#balance" do 
     it { is_expected.to respond_to(:balance) }
@@ -17,7 +18,7 @@ RSpec.describe Oystercard do
     it { is_expected.to respond_to(:top_up).with(1).argument }
   
     it "will top up balance" do
-     expect { subject.top_up(3) }.to change{ subject.balance }.by(3) 
+     expect { subject.top_up(3) }.to change { subject.balance }.by(3)
     end
     
     it "it raises an error if we try to top up more than our limit" do
@@ -28,19 +29,21 @@ RSpec.describe Oystercard do
   end
    
   before :each do
-    subject.top_up(Oystercard::MINIMUM_AMOUNT)
+    subject.top_up(50) # previously Oystercard::MINIMUM_AMOUNT
   end
 
   describe "#touch_in and #touch_out" do
     it "can touch in" do
       subject.touch_in(entry_station)
-      expect(subject.in_journey?).to eq true
+      allow(journey).to receive(:in_journey?).and_return(true)
+      expect(subject.journey.in_journey?).to eq true
     end
 
     it "can touch out" do
       subject.touch_in(entry_station)
       subject.touch_out(exit_station)
-      expect(subject.in_journey).to eq false
+      allow(journey).to receive(:in_journey?).and_return(false)
+      expect(subject.journey.in_journey?).to eq false
     end
 
     it "recorded the station you have touched in at" do
@@ -55,9 +58,8 @@ RSpec.describe Oystercard do
     it 'raises an error if we touch in with funds less than minimum amount' do
       subject = Oystercard.new
       minimum_amount = Oystercard::MINIMUM_AMOUNT
-      
       expect { subject.touch_in(entry_station) }.to raise_error "Need minimum amount of £#{minimum_amount} to touch in"
-    end 
+    end
 
     it "on touch out it will deduct from balance " do
       subject.touch_in(entry_station)
@@ -67,26 +69,50 @@ RSpec.describe Oystercard do
     it "records one journey" do
       subject.touch_in(entry_station)
       subject.touch_out(exit_station)
-      expect(subject.stations).to eq ([{ :entry_station => entry_station, :exit_station => exit_station }])
+      expect(subject.journey.stations).to eq ([{ :entry_station => entry_station, :exit_station => exit_station }])
     end
   end
-  
+
   describe "#in_journey?" do
     it "true if you touch in" do
       subject.touch_in(entry_station)
-      expect(subject.in_journey?).to eq true
+      allow(journey).to receive(:in_journey?).and_return(true)
+      expect(subject.journey.in_journey?).to eq true
     end
 
     it "false if you touch on" do
       subject.touch_in(entry_station)
       subject.touch_out(exit_station)
-      expect(subject.in_journey?).to eq false
+      allow(journey).to receive(:in_journey?).and_return(false)
+      expect(subject.journey.in_journey?).to eq false
     end
   end
 
   describe "stations" do
     it "will be empty by default" do
-      expect(subject.stations).to eq []
+      expect(subject.journey.stations).to eq []
+    end
+  end
+
+  describe "#fare" do
+    it { is_expected.to respond_to :fare }
+
+    it "returns minimum fare" do
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.fare).to eq Oystercard::MINIMUM_AMOUNT
+    end
+
+    it "returns penalty fare" do
+      subject.touch_in(entry_station)
+      subject.touch_out(nil)
+      expect(subject.fare).to eq Oystercard::PENALTY_FARE
+    end
+
+    it "returns penalty fare" do
+      subject.touch_in(nil)
+      subject.touch_out(exit_station)
+      expect(subject.fare).to eq Oystercard::PENALTY_FARE
     end
   end
 
