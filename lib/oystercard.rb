@@ -15,17 +15,18 @@ class Oystercard
   end
 
   def top_up(money)
-    raise "you have reached your top up limit of #{LIMIT}" if money + @balance > LIMIT
+    raise "you have reached your top up limit of #{LIMIT}" if limit?(money)
   
     @balance += money
   end
 
+  def limit?(money)
+    (money + @balance) > LIMIT
+  end
   
   def touch_in(station)
     raise "Need minimum amount of £#{MINIMUM_AMOUNT} to touch in" if under_minimum_amount
     @entry_station = station
-    # return "you have touched in"
-    
   end
   
   def touch_out(station)
@@ -39,12 +40,9 @@ class Oystercard
   end
   
   def in_journey?
-    if @entry_station == nil
-      false
-    else
-      true
-    end
+    @entry_station == nil ? false : true
   end
+
   private
 
   def deduct(money)
