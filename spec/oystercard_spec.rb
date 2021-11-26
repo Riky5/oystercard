@@ -94,26 +94,26 @@ RSpec.describe Oystercard do
     end
   end
 
-  describe "#fare" do
-    it { is_expected.to respond_to :fare }
+  # describe "#fare" do
+  #   it { is_expected.to respond_to :fare }
 
-    it "returns minimum fare" do
-      subject.touch_in(entry_station)
-      subject.touch_out(exit_station)
-      expect(subject.fare).to eq Oystercard::MINIMUM_AMOUNT
-    end
+  #   it "returns minimum fare" do
+  #     subject.touch_in(entry_station)
+  #     subject.touch_out(exit_station)
+  #     expect(subject.fare).to eq Oystercard::MINIMUM_AMOUNT
+  #   end
 
-    it "returns penalty fare" do
-      subject.touch_in(entry_station)
-      subject.touch_out(nil)
-      expect(subject.fare).to eq Oystercard::PENALTY_FARE
-    end
+  #   it "returns penalty fare" do
+  #     subject.touch_in(entry_station)
+  #     subject.touch_out(nil)
+  #     expect(subject.fare).to eq Oystercard::PENALTY_FARE
+  #   end
 
-    it "returns penalty fare" do
-      subject.touch_in(nil)
-      subject.touch_out(exit_station)
-      expect(subject.fare).to eq Oystercard::PENALTY_FARE
-    end
-  end
+  #   it "returns penalty fare" do
+  #     subject.touch_in(nil)
+  #     subject.touch_out(exit_station)
+  #     expect(subject.fare).to eq Oystercard::PENALTY_FARE
+  #   end
+  # end
 
 end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require_relative 'journey'
 
-require_relative "oystercard"
 class Oystercard
   LIMIT = 90
   MINIMUM_AMOUNT = 1
@@ -43,23 +42,6 @@ class Oystercard
   
   def under_minimum_amount
     @balance < MINIMUM_AMOUNT
-  end
-
-  # CASES
-  # journey = [{ entry_station => "piccadilly", exit_station => "aldgate" }] correct journey = pay 1
-
-  # journey = [{ entry_station => nil, exit_station => "aldgate"}] - penalty fare 6
-
-  # journey = [{ entry_station => "piccally", exit_station => nil }] - penalty fare 6
-
-  def fare
-    if @journey.stations[0][:entry_station] != nil && @journey.stations[0][:exit_station] == nil
-      PENALTY_FARE
-    elsif @journey.stations[0][:entry_station] == nil && @journey.stations[0][:exit_station] != nil
-      PENALTY_FARE
-    else
-      MINIMUM_AMOUNT
-    end
   end
 
   private
