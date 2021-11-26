@@ -1,11 +1,12 @@
 # frozen_string_literal: true
+
 require "oystercard"
 RSpec.describe Oystercard do
   let(:entry_station) { double(:entry_station) }
   let(:exit_station) { double(:exit_station) }
-  let(:journey) { double('journey') }
+  let(:journey) { double("journey") }
 
-  describe "#balance" do 
+  describe "#balance" do
     it { is_expected.to respond_to(:balance) }
 
     it "will initialize with with a default balance of 0" do
@@ -16,18 +17,18 @@ RSpec.describe Oystercard do
 
   describe "#top_up" do
     it { is_expected.to respond_to(:top_up).with(1).argument }
-  
+
     it "will top up balance" do
-     expect { subject.top_up(3) }.to change { subject.balance }.by(3)
+      expect { subject.top_up(3) }.to change { subject.balance }.by(3)
     end
-    
-    it "it raises an error if we try to top up more than our limit" do
+
+    it "raises error if we try to top up more than our limit" do
       subject = Oystercard.new
       subject.top_up(90)
       expect { subject.top_up(4) }.to raise_error "you have reached your top up limit of 90"
     end
   end
-   
+
   before :each do
     subject.top_up(50) # previously Oystercard::MINIMUM_AMOUNT
   end
@@ -55,7 +56,7 @@ RSpec.describe Oystercard do
       expect(subject.touch_out(exit_station)).to eq nil
     end
 
-    it 'raises an error if we touch in with funds less than minimum amount' do
+    it "raises error if we touch in with funds less than minimum amount" do
       subject = Oystercard.new
       minimum_amount = Oystercard::MINIMUM_AMOUNT
       expect { subject.touch_in(entry_station) }.to raise_error "Need minimum amount of £#{minimum_amount} to touch in"
@@ -63,13 +64,13 @@ RSpec.describe Oystercard do
 
     it "on touch out it will deduct from balance " do
       subject.touch_in(entry_station)
-      expect { subject.touch_out(exit_station) }.to change{ subject.balance }.by(-Oystercard::MINIMUM_AMOUNT)
+      expect { subject.touch_out(exit_station) }.to change { subject.balance }.by(-Oystercard::MINIMUM_AMOUNT)
     end
 
     it "records one journey" do
       subject.touch_in(entry_station)
       subject.touch_out(exit_station)
-      expect(subject.journey.stations).to eq ([{ :entry_station => entry_station, :exit_station => exit_station }])
+      expect(subject.journey.stations).to eq [{ entry_station: entry_station, exit_station: exit_station }]
     end
   end
 
@@ -93,27 +94,4 @@ RSpec.describe Oystercard do
       expect(subject.journey.stations).to eq []
     end
   end
-
-  # describe "#fare" do
-  #   it { is_expected.to respond_to :fare }
-
-  #   it "returns minimum fare" do
-  #     subject.touch_in(entry_station)
-  #     subject.touch_out(exit_station)
-  #     expect(subject.fare).to eq Oystercard::MINIMUM_AMOUNT
-  #   end
-
-  #   it "returns penalty fare" do
-  #     subject.touch_in(entry_station)
-  #     subject.touch_out(nil)
-  #     expect(subject.fare).to eq Oystercard::PENALTY_FARE
-  #   end
-
-  #   it "returns penalty fare" do
-  #     subject.touch_in(nil)
-  #     subject.touch_out(exit_station)
-  #     expect(subject.fare).to eq Oystercard::PENALTY_FARE
-  #   end
-  # end
-
 end
